@@ -1,0 +1,48 @@
+services:
+    nginx:
+        build: "./nginx"
+        ports:
+            - 7880:80
+            - 1443:443
+            - 4989:4999
+        volumes:
+            - '../../:/var/www/php'
+            - './nginx/nginx.conf:/etc/nginx/nginx.conf'
+            - './nginx/conf.d:/etc/nginx/conf.d'
+            - './nginx/logs:/var/log/nginx'
+            - './php-fpm/sock:/var/tmp/php-fpm'
+        depends_on:
+            - php-fpm
+        restart: unless-stopped
+    php-fpm:
+        build: "./php-fpm"
+        extra_hosts:
+            - "host.docker.internal:host-gateway"
+        volumes:
+            - '../../:/var/www/php'
+            - './php-fpm/etc/php/php.ini:/usr/local/etc/php/php.ini'
+            - './php-fpm/etc/php-fpm.d/pms:/usr/local/etc/php-fpm.d/pms'
+            - './php-fpm/etc/php-fpm.conf:/usr/local/etc/php-fpm.conf'
+            - './supervisor/conf.d:/etc/supervisord.d'
+            - './supervisor/supervisord.conf:/etc/supervisord.conf'
+            - './php-fpm/sock:/var/tmp/php-fpm'
+            - './.docker_bash_history:/root/.bash_history'
+        ports:
+            - 33003:39001
+        depends_on:
+            - redis
+            - rabbitmq
+        restart: unless-stopped
+    redis:
+        image: "redis:7.0"
+        restart: unless-stopped
+    rabbitmq:
+        build: "./rabbitmq"
+        ports:
+            - 5673:5672
+            - 15673:15672
+        environment:
+            RABBITMQ_DEFAULT_USER: ok
+            RABBITMQ_DEFAULT_PASS: ok2023_888
+        restart: unless-stopped
+

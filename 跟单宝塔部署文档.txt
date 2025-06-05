@@ -1,0 +1,62 @@
+
+
+1.php版本8.2，安装fileinfo、redis扩展，上传限制500MB
+2. redis版本6.0及以上，配置.env中redis的IP和密码
+3.nginx配置server加上url重写：
+server
+{
+	listen       7880;
+    listen  [::]:7880;
+    #listen       443 ssl;
+    server_name localhost;
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+    
+    location /api/f1 {
+        rewrite    /api/f1/(.*) /$1 break;
+        proxy_pass http://127.0.0.1:9000;
+    }
+	
+	location ~ \.php(.*)$ {
+        fastcgi_pass   127.0.0.1:9000;
+        fastcgi_index  index.php;
+        fastcgi_split_path_info  ^((?U).+\.php)(/?.+)$;
+        fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
+        fastcgi_param  PATH_INFO  $fastcgi_path_info;
+        fastcgi_param  PATH_TRANSLATED  $document_root$fastcgi_path_info;
+        include        fastcgi_params;
+    }
+	
+}
+
+
+4. 代码上传到根目录
+修改项目的storage目录用户组。宝塔安装php-fpm默认user，group是www
+执行：chown www:www -R  项目根路径/storage
+
+
+5.定时任务
+#内容：每分钟执行一次
+chown www:www -R /mnt/www/t-api/storage/logs/*.log && cd /mnt/www/t-api && php artisan schedule:run
+
+#设置守护进程
+nohup php /mnt/www/t-api/artisan queue:listen --queue=default --tries=3
+
+
+
+进程名称：消息队列消费端
+启动命令：
+cd /mnt/www/t-api  #进入项目目录
+nohup php artisan queue:listen --tries=3
+php artisan queue:work --queue=default
+
+
+
+
+修改配置文件
+在宝塔php的配置文件里：disable_functions 去掉pcntl_alarm\pcntl_signal\proc_open 这三个函数的限制，不然定时任务报错
+
+
+
+

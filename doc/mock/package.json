@@ -1,0 +1,32 @@
+{
+  "name": "mockServer",
+  "version": "1.0.0",
+  "description": "",
+  "private": true,
+  "egg": {
+    "declarations": true
+  },
+  "dependencies": {
+    "mockjs": "^1.1.0",
+    "pm2": "^4.5.5"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=10.0.0"
+  },
+  "scripts": {
+    "start": "npm run pm2 start index.js  ",
+    "stop": "npm run pm2 stop index.js  ",
+    "pm2-docker": "node ./node_modules/pm2/bin/pm2-docker",
+    "pm2": "node ./node_modules/pm2/bin/pm2"
+  },
+  "ci": {
+    "version": "10"
+  },
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "author": "star7th",
+  "license": "MIT"
+}
